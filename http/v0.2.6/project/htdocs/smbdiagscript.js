@@ -1,37 +1,7 @@
-<html>
-<head>
-<style>
-table.inputtable {
-    border-width:4;
-    border-style:solid;
-    border-color:black;
-    width:200;
-}
-tr.inputtable {
-    border-width:1;
-    border-style:solid;
-    border-color:black;
-    width:100%;
-    }
-td.inputtable {
-    border-width:1;
-    border-style:solid;
-    border-color:black;
-    width:50%;
-    }
-td.inputenter {
-    border-width:1;
-    border-style:solid;
-    border-color:black;
-//    text-align:center;
-    width:100%;
-    }
-</style>
-<script>
+
 var ntimes=0;
-
-
 var xmlhttp;
+
 function AjaxUpdate()
 {
     if (!xmlhttp)
@@ -111,6 +81,7 @@ var parameters = "AjaxSetVal="+value;
     mypostrequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     mypostrequest.send(parameters);
 }
+
 function PostInput()
 {
     document.getElementById("AjaxSetVal").value = this.innerHTML;
@@ -123,55 +94,25 @@ function dostartUpdate()
 }
 function dostart()
 {
-var r,c;
+var r,c,x;
 
-    for (r = 0; r < document.getElementById("inputtable").rows.length; r++)
+/*
+    for (r = 0; r < document.getElementById("smbdiagiapptable").rows.length; r++)
     {
-        for (c=0; c<document.getElementById("inputtable").rows[r].cells.length; c++)
+        for (c=0; c<document.getElementById("smbdiagiapptable").rows[r].cells.length; c++)
         {
-            document.getElementById("inputtable").rows[r].cells[c].onclick=PostInput;
+            document.getElementById("smbdiagiapptable").rows[r].cells[c].onclick=PostInput;
         }
+   }
+*/
+   x = document.getElementsByClassName("smbdiagposttype");
+   for (r = 0; r < x.length; r++) {
+      x[r].onclick=PostInput;
+   }
+
+   x = document.getElementsByClassName("donotclick");
+   for (r = 0; r < x.length; r++) {
+      x[r].onclick=null;
    }
 
 }
-
-</script>
-
-</head>
-<body onload="setTimeout('dostart()', 100);"/>
-
-<button style="width:100px" type="button" onclick="dostartUpdate()"><br>Click To Start <br>Retrieving Updates From<br> The Server</button>
-
-
-<div id="myDiv"><h2>AJAX Will Change This Text Content !</h2></div>
-
-<h3>Click a cell to send the command to the server.</h3>
-<form id="demo_ajax_command_submit">
-<table id="inputtable" class="inputtable">
-<tr class="inputtable">
-<td class="inputtable">+10</td><td class="inputtable">-10</td>
-</tr>
-<tr>
-<td class="inputtable">+100</td><td class="inputtable">-100</td>
-</tr>
-<tr class="inputtable">
-<td class="inputenter" colspan=2>clear</td>
-</tr>
-<tr class="inputtable">
-<td class="inputenter" colspan=2>SMB FIDS</td>
-</tr>
-<tr class="inputtable">
-<td class="inputenter" colspan=2>SMB TIDS</td>
-</tr>
-<tr class="inputtable">
-<td class="inputenter" colspan=2>SMB SESSION</td>
-</tr>
-<tr class="inputtable">
-<td class="inputenter" colspan=2>SMB STATS</td>
-</tr>
-</table>
-<br><b>Last Entry</b><br>
-<input type="text" name="AjaxSetVal" id="AjaxSetVal" value="0">
-</form>
-</body>
-</html>

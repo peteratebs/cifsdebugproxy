@@ -1,0 +1,48 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="smbdiagstyle.css">
+<script src="smbdiagscript.js"></script>
+</head>
+<body onload="setTimeout('dostart()', 100);"/>
+
+<!--
+ <button style="width:100px" type="button" onclick="dostartUpdate()"><br>Click To Start <br>Retrieving Updates From<br> The Server</button>
+-->
+
+<form id="demo_ajax_command_submit">
+<table id="smbdiagiapptable" class="smbdiagiapptable">
+<th class="smbdiagiapptable" colspan=3>Click a cell to send the command to the server.</th>
+<tr class="smbdiagiapptable">
+ <td class="smbdiagiapptable">+10</td><td class="smbdiagiapptable">-10</td>
+ <td class="smbdiagoutput  donotclick" rowspan=7><div id="myDiv"><h2>AJAX Will Change This Text Content !</h2></div> </td>
+</tr>
+<tr>
+ <td class="smbdiagiapptable">+100</td><td class="smbdiagiapptable">-100</td>
+</tr>
+<tr class="smbdiagiapptable">
+ <td class="smbdiagposttype" colspan=2>clear</td>
+</tr>
+<tr class="smbdiagiapptable"  rowspan=2>
+<td class="smbdiagposttype donotclick" colspan=2>
+ <button type="button" onclick="dostartUpdate()"><br>Click To Start <br>Retrieving Updates From<br> The Server</button>
+</tr>
+<tr class="smbdiagiapptable">
+ <td class="smbdiagposttype" colspan=2>SMB FIDS</td>
+</tr>
+<tr class="smbdiagiapptable">
+ <td class="smbdiagposttype" colspan=2>SMB TIDS</td>
+</tr>
+<tr class="smbdiagiapptable">
+ <td class="smbdiagposttype" colspan=2>SMB SESSION</td>
+</tr>
+<tr class="smbdiagiapptable">
+ <td class="smbdiagposttype" colspan=2>SMB STATS</td>
+</tr>
+<tr class="smbdiagiapptable donotclick">
+ <td class="smbdiagconsole donotclick" colspan=3> </td>
+</tr>
+</table>
+<input type="text" name="AjaxSetVal" id="AjaxSetVal" value="0">
+</form>
+</body>
+</html>
