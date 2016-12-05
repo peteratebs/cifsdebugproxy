@@ -30,7 +30,7 @@ function AjaxUpdate()
         }
     }
     //     xmlhttp.open("GET","http://statincInfo.html",true); -->
-    xmlhttp.open("GET","demo_ajax_getval",true);
+    xmlhttp.open("GET","smbdiag_ajax_getval",true);
 //    xmlhttp.open("GET","ajax.html?10",true);
 //    alert('call send new way');
     xmlhttp.send("I%20sent%20ome%20stuff%20to%20you");
@@ -76,8 +76,8 @@ function doPost()
 var value=encodeURIComponent(document.getElementById("AjaxSetVal").value);
 var parameters = "AjaxSetVal="+value;
 
-//    mypostrequest.open("POST", "http://localhost:8080/demo_ajax_command_submit", true);
-    mypostrequest.open("POST", "/demo_ajax_command_submit", true);
+//    mypostrequest.open("POST", "http://localhost:8080/smbdiag_ajax_command_submit", true);
+    mypostrequest.open("POST", "/smbdiag_ajax_command_submit", true);
     mypostrequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     mypostrequest.send(parameters);
 }

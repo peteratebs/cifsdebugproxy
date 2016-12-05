@@ -232,20 +232,20 @@ static int http_server_demo_restart(void)
 
 	/* Create an ajax applet that accepts value updates from a browser via POST and returns a modified
        value (multiplied by 4) in a reply.
-       The client applications Html5Demo.html and Html4Demo.html use the reply data  from "\\demo_ajax_getval"
+       The client applications Html5Demo.html and Html4Demo.html use the reply data  from "\\smbdiag_ajax_getval"
        to update their screens.
 	*/
      /*  Add a url that updates a value stored in the variable AjaxDemoValue. The value is poste by the Html5Demo.html example when the slider is moved */
-	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\demo_ajax_setval_submit", ajax_update_demo_cb, (void *)"set_value") < 0)
+	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\smbdiag_ajax_setval_submit", ajax_update_demo_cb, (void *)"set_value") < 0)
 		return -1;
      /*  Add a url that updates a value stored in the variable AjaxDemoValue. The value is posted by the Html4Demo.html example when a table cell is clicked. */
-	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\demo_ajax_command_submit", ajax_update_demo_cb, (void *)"process_command") < 0)
+	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\smbdiag_ajax_command_submit", ajax_update_demo_cb, (void *)"process_command") < 0)
 		return -1;
      /*  Add a url that returns the current tick count and the current value stored in the variable AjaxDemoValue. Html4Demo.html and Html5Demo.html retrieve these
          an update their screens. */
-	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\demo_ajax_getval", ajax_update_demo_cb, (void *)"get_value") < 0)
+	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\smbdiag_ajax_getval", ajax_update_demo_cb, (void *)"get_value") < 0)
 		return -1;
-	rtp_printf("Post Handlers for demo_ajax_setval_submit, demo_ajax_command_submit and demo_ajax_getval have been assigned\n");
+	rtp_printf("Post Handlers for smbdiag_ajax_setval_submit, smbdiag_ajax_command_submit and smbdiag_ajax_getval have been assigned\n");
 
 	return (0);
 }
@@ -579,7 +579,7 @@ HTTP_CHAR cgiArgs[256];
             diag_test();
 			sprintf(respBuffer,"<html><body><b>Systick [%d] <br>PanelValue [%d]</b></body></html>",rtp_get_system_msec(), AjaxDemoValue);
     }
-    else if (rtp_strcmp(request->target, "/demo_ajax_getval")==0)
+    else if (rtp_strcmp(request->target, "/smbdiag_ajax_getval")==0)
     {
 //            diag_test();
 			sprintf(respBuffer,"<html><body><b>Systick [%d] <br>PanelValue [%d]</b></body></html>",rtp_get_system_msec(), AjaxDemoValue);
