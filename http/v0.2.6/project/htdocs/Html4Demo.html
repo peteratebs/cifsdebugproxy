@@ -5,7 +5,7 @@ table.inputtable {
     border-width:4;
     border-style:solid;
     border-color:black;
-    width:100;
+    width:200;
 }
 tr.inputtable {
     border-width:1;
@@ -23,7 +23,7 @@ td.inputenter {
     border-width:1;
     border-style:solid;
     border-color:black;
-    text-align:center;
+//    text-align:center;
     width:100%;
     }
 </style>
@@ -67,7 +67,7 @@ function AjaxUpdate()
 //    alert('call send is back');
 //    alert("sync respose == "+xmlhttp.responseText);
 //    document.getElementById("myDiv").innerHTML=xmlhttp.responseText;
-    setTimeout("AjaxUpdate()", 1000);
+    setTimeout("AjaxUpdate()", 10000);
 }
 
 
@@ -105,7 +105,9 @@ function doPost()
 {
 var value=encodeURIComponent(document.getElementById("AjaxSetVal").value);
 var parameters = "AjaxSetVal="+value;
-    mypostrequest.open("POST", "http://localhost/demo_ajax_command_submit", true);
+
+//    mypostrequest.open("POST", "http://localhost:8080/demo_ajax_command_submit", true);
+    mypostrequest.open("POST", "/demo_ajax_command_submit", true);
     mypostrequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     mypostrequest.send(parameters);
 }
@@ -117,7 +119,7 @@ function PostInput()
 
 function dostartUpdate()
 {
-    setTimeout('AjaxUpdate(1);', 1000);
+    setTimeout('AjaxUpdate(1);', 10000);
 }
 function dostart()
 {
@@ -154,6 +156,18 @@ var r,c;
 </tr>
 <tr class="inputtable">
 <td class="inputenter" colspan=2>clear</td>
+</tr>
+<tr class="inputtable">
+<td class="inputenter" colspan=2>SMB FIDS</td>
+</tr>
+<tr class="inputtable">
+<td class="inputenter" colspan=2>SMB TIDS</td>
+</tr>
+<tr class="inputtable">
+<td class="inputenter" colspan=2>SMB SESSION</td>
+</tr>
+<tr class="inputtable">
+<td class="inputenter" colspan=2>SMB STATS</td>
 </tr>
 </table>
 <br><b>Last Entry</b><br>

@@ -1,6 +1,3 @@
-
-Http client and server software library in C
-
 * Copyright, Peter Van Oudenaren
 *  EBS Inc. 1987-2015
 * All rights reserved.
@@ -9,15 +6,20 @@ Http client and server software library in C
 
 * contact sales@ebsembeddedsoftware.com
 
+build
+  cd ./csdebugproxy/http/v0.2.6/project/linux_generic/linuxserver
+  make clean
+  make
 
-This project provides APIs and examples that allow you to add HTTP client and server code to embedded applications.
+Run:
+  ./run.sh
 
-A more elaborate description of what is included may be had by reading the file names ReadMe.pdf in the root of this repo.
 
-Known issues -
-  ssl is incorporated but there are some problems that need to be debugged.
-  client code was extracted from a UPnP implementation, so its core is pretty robust but the examples using its standalone API and some of the API elements are not super mature.
-  A Visual 'C' 2010 project is provided in the folder: .\httpserverandclient\http\v0.2.6\project\msvs.net2010\win32\serverdemo, but a Linux project needs to be developed and debugged.
-  The source code already supports Linux, Make file need to be created and the code needs to be tested.
+Web Access:
+  locally:  http://localhost:8080/Html4Demo.html
+  remotely: example: http://192.168.1.5:8080/Html4Demo.html
 
+Usage:
+  click on one of the SMB command buttons and a message is routed to the smb server to dump diagnostices.
+  Needs work, just a shell now.
 

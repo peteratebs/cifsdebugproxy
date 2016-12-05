@@ -40,6 +40,8 @@ static RTP_HANDLE sslContext = 0;
 static unsigned sslEnabled  = 1;
 #endif
 
+extern void diag_test(void);
+
 
  /* A context structure for keeping our application data
     This is a duplicate of the typedef in example_server.c
@@ -152,6 +154,7 @@ int http_advanced_server_demo(void)
 {
 	HTTP_INT16 ipType = DEMO_IPVERSION;
 	int idle_count = 0;
+	int idle_count_minutes = 0;
 	rtp_net_init();
 	rtp_threads_init();
 #ifdef CALL_SSL_MAIN
@@ -202,23 +205,26 @@ int http_advanced_server_demo(void)
 	/* Now loop continuously process one request per loop. */
 	for (;;)
 	{
+        int hits;
 #ifdef CALL_SSL_MAIN
         if (HTTPS_ServerProcessOneRequest (sslContext,
                                             &ExampleServerCtx.httpServer,
                                             1000*60) < 0)
 #else
-		if (HTTP_ServerProcessOneRequest (&ExampleServerCtx.httpServer, 1000*60) < 0)
+//		if (HTTP_ServerProcessOneRequest (&ExampleServerCtx.httpServer, 1000*60) < 0)
+		if ((hits=HTTP_ServerProcessOneRequest (&ExampleServerCtx.httpServer, 100)) < 1)
 #endif
 		{
 			/* Print an idle counter every minute the server is not accessed */
 			idle_count += 1;
-			if (idle_count == 1)
-				rtp_printf("\n Idle %d minutes      ", idle_count);
-			else
-				rtp_printf("                                     \r Idle %d minutes", idle_count);
+			if (idle_count == 100)
+            {
+				rtp_printf("\n Idle %d minutes      ", ++idle_count_minutes);
+	            idle_count = 0;
+            }
 		}
 		else
-			idle_count = 0;
+          idle_count = 0;
 
 		if (ExampleServerCtx.ModuleRequestingReload)
 		{
@@ -298,7 +304,7 @@ static int http_server_demo_restart(void)
 			1,                // httpMajorVersion
 			1,                // httpMinorVersion
 			pDefaultIpAddr,
-			8080,  // 80,               // 80  ?? Use the www default port
+			8080, //8080,               // 80  ?? Use the www default port
 			DEMO_IPVERSION,   // ipversion type(4 or 6)
 			0,                // allowKeepAlive
 			ExampleServerCtx.connectCtxArray,  // connectCtxArray
@@ -339,7 +345,25 @@ static int http_server_demo_restart(void)
 		return -1;
 	rtp_printf("Post Handlers for demo_ajax_setval_submit, demo_ajax_command_submit and demo_ajax_getval have been assigned\n");
 
-
+        /*  Add a url that returns the current tick count and the current value stored in the variable AjaxDemoValue. Html4Demo.html and Html5Demo.html retrieve these
+         an update their screens. */
+	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\smbdebug", ajax_update_demo_cb, (void *)"get_value") < 0)
+		return -1;
+	rtp_printf("Post Handlers for demo_ajax_setval_submit, smbdebug has been assigned\n");
+#if (0)
+	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\smbdebug_one", ajax_update_demo_cb, (void *)"get_value") < 0)
+		return -1;
+	rtp_printf("Post Handlers for demo_ajax_setval_submit, smbdebug_one has been assigned\n");
+	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\smbdebug_two", ajax_update_demo_cb, (void *)"get_value") < 0)
+		return -1;
+	rtp_printf("Post Handlers for demo_ajax_setval_submit, smbdebug_two has been assigned\n");
+	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\smbdebug_three", ajax_update_demo_cb, (void *)"get_value") < 0)
+		return -1;
+	rtp_printf("Post Handlers for demo_ajax_setval_submit, smbdebug_three has been assigned\n");
+	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\smbdebug_four", ajax_update_demo_cb, (void *)"get_value") < 0)
+		return -1;
+	rtp_printf("Post Handlers for demo_ajax_setval_submit, smbdebug_four has been assigned\n");
+#endif
 	/* Create an ajax applet that accepts value updates from a browser via POST and returns a modified
        value (multiplied by 4) in a reply.
        The client applications Html5Demo.html and Html4Demo.html use the reply data  from "\\demo_ajax_getval"
@@ -699,6 +723,17 @@ HTTP_CHAR cgiArgs[256];
                value_count = 0;
             }
 #else
+	if (rtp_strstr(request->target, "/smbdebug"))
+    {
+            diag_test();
+			sprintf(respBuffer,"<html><body><b>Systick [%d] <br>PanelValue [%d]</b></body></html>",rtp_get_system_msec(), AjaxDemoValue);
+    }
+    else if (rtp_strcmp(request->target, "/demo_ajax_getval")==0)
+    {
+//            diag_test();
+			sprintf(respBuffer,"<html><body><b>Systick [%d] <br>PanelValue [%d]</b></body></html>",rtp_get_system_msec(), AjaxDemoValue);
+    }
+
 			sprintf(respBuffer,"<html><body><b>Systick [%d] <br>PanelValue [%d]</b></body></html>",rtp_get_system_msec(), AjaxDemoValue);
 #endif
 			HTTP_ServerInitResponse(ctx, session, &response, 200, "OK");
@@ -738,10 +773,14 @@ HTTP_CHAR cgiArgs[256];
 
 					if (pSetValPair)
 					{
+                    char *psmbcmd=0;
 						if (userData && rtp_strcmp((HTTP_CHAR *)userData, "process_command")==0)
 						{
 						    if (rtp_strcmp(pSetValPair->value, "clear")==0)
+                            {
+                                diag_test();
 							    AjaxDemoValue = 0;
+                            }
 							else if (rtp_strcmp(pSetValPair->value, "+10")==0)
 							    AjaxDemoValue +=10;
 							else if (rtp_strcmp(pSetValPair->value, "-10")==0)
@@ -754,6 +793,12 @@ HTTP_CHAR cgiArgs[256];
 						else if (userData && rtp_strcmp((HTTP_CHAR *)userData, "set_value")==0)
                         {
 							AjaxDemoValue=rtp_atol(pSetValPair->value);
+                        }
+                        if ((psmbcmd=rtp_strstr(pSetValPair->value, "SMB")))
+                        {
+                            rtp_printf("Send %s\n", psmbcmd);
+                            diag_test();
+                            AjaxDemoValue = 0;
                         }
 						rtp_printf("Changed V to %d\n", AjaxDemoValue);
 #if (TEST_JSON)
