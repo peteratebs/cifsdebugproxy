@@ -103,6 +103,19 @@ HTTP_CHAR *http_demo_alloc_string(HTTP_CHAR *string);
 /* Function Definitions
  *****************************************************************************/
 
+#include<signal.h>
+// #include <unistd.h>
+
+volatile int go = 1; /* Variable loop on.. Note: Linux version needs sigkill support to clean up */
+
+void sig_handler(int signo)
+{
+  if (signo == SIGINT)
+  {
+    go = 0;
+  }
+}
+
 /*---------------------------------------------------------------------------*/
 
 /* Main entry point for the web server application.
@@ -114,6 +127,10 @@ int smbdiagproxy_server_main(void)
 	HTTP_INT16 ipType = DEMO_IPVERSION;
 	int idle_count = 0;
 	int idle_count_minutes = 0;
+
+    // Control C handler for setting go = 0
+    signal(SIGINT, sig_handler);
+
 	rtp_net_init();
 	rtp_threads_init();
 
@@ -144,7 +161,7 @@ int smbdiagproxy_server_main(void)
 
 //========================
 	/* Now loop continuously process one request per loop. */
-	for (;;)
+	while (go)
 	{
         int hits;
 //		if (HTTP_ServerProcessOneRequest (&ExampleServerCtx.httpServer, 1000*60) < 0)
@@ -176,6 +193,9 @@ int smbdiagproxy_server_main(void)
 		}
 	}
 
+    rtp_printf("Bye !!\n");
+    HTTP_ServerDestroy(&ExampleServerCtx.httpServer, &ExampleServerCtx.connectCtxArray);
+	rtp_free(ExampleServerCtx.connectCtxArray);
 	rtp_net_exit();
 	return (0);
 
@@ -683,4 +703,3 @@ HTTP_CHAR cgiArgs[256];
 			return (HTTP_REQUEST_STATUS_DONE);
     }
 }
-

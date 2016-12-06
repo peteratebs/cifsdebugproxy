@@ -1289,7 +1289,7 @@ int rtp_net_setblocking (RTP_HANDLE sockHandle, unsigned int onBool)
 {
   int arg;
 
-  arg = (int)(!onBool);
+  arg = (int)(onBool);
   if (ioctl((int) sockHandle, FIONBIO, &arg) < 0)
     {
 #ifdef RTP_DEBUG
