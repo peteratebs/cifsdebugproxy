@@ -82,14 +82,15 @@ typedef struct s_RtpNetSockStruct
 }
 RtpNetSockStruct;
 
-#define LOCAL_DEBUG_PORTNUMBER 9988
-#define REMOTE_DEBUG_PORTNUMBER 9989
 static int http_netport_select_n_for_read (HTTP_SOCKET *socketList, int listSize, long timeoutMsec);
 static int rtsmb_net_read_datagram (HTTP_SOCKET sock, void * pData, int size, unsigned char * remoteAddr, int * remotePort);
 static int rtsmb_net_write_datagram (HTTP_SOCKET socket, unsigned char * remote, int port, unsigned char  *buf, int size);
 static void diag_recv(void);
-HTTP_SOCKET diag_socket;
+#define DO_SELECT_ON_DIAG 0
+HTTP_SOCKET diag_socket = -1;
 static int bind_diag_socket(void);
+#define REMOTE_DEBUG_TO_PROXY_PORTNUMBER 9988
+#define REMOTE_DEBUG_FROM_PROXY_PORTNUMBER 9989
 
 
 /*****************************************************************************/
@@ -708,25 +709,29 @@ HTTP_SOCKET socketList[10];
 int socketListLength = 1;
 int i;
     socketList[0] = server->serverSocket;
-    if (diag_socket >= 0)
+#if (DO_SELECT_ON_DIAG)
+    if (diag_socket > 0)
     {
       socketList[1] = diag_socket;
       socketListLength = 2;
     }
+#endif
     if ((result = http_netport_select_n_for_read (socketList, socketListLength, timeoutMsec)) < 1)
 //	if (rtp_net_read_select(server->serverSocket, timeoutMsec) < 0)
 	{
 		return (result);
 	}
+#if (DO_SELECT_ON_DIAG)
     for (i = 0; i < result; i++)
     {
-      if ((diag_socket >= 0) && socketList[i] == diag_socket)
+      if ((diag_socket > 0) && socketList[i] == diag_socket)
       {
         diag_recv();
         if (result==1)
          return 0;
        }
     }
+#endif
 
 	if (rtp_net_accept(&sockHandle, server->serverSocket, clientAddr.ipAddr, &clientAddr.port, &clientAddr.type) < 0)
 	{
@@ -1740,7 +1745,9 @@ static int rtsmb_net_read_datagram (HTTP_SOCKET sock, void * pData, int size, un
         remotePort = &newPort;
     }
 
+printf("Call rtp_net_recvfrom(%d) \n", sock);
     bytesRead = rtp_net_recvfrom(sock, pData, size, remoteAddr, remotePort, &ipVer);
+printf("back rtp_net_recvfrom(%d) with %d\n", sock, bytesRead );
 
     if(bytesRead < 0)
     {
@@ -1749,6 +1756,7 @@ static int rtsmb_net_read_datagram (HTTP_SOCKET sock, void * pData, int size, un
     }
 //    rtsmb_net_ip_to_str(remoteAddr, (char *)temp);
 
+printf("return rtp_net_recvfrom(%d) with %d\n", sock, bytesRead );
     return bytesRead;
 }
 
@@ -1777,6 +1785,7 @@ static int rtsmb_net_write_datagram (HTTP_SOCKET socket, unsigned char * remote,
 }
 int remotePort=-1;
 
+
 void diag_test(void)
 {
  printf("GO Requested\n");
@@ -1787,33 +1796,66 @@ void diag_test(void)
 // Send from the http server to the smb server over localhost
 void diag_send_command(char *buf)
 {
+ printf("sending sock:%d  buff:[%s] to %d\n",diag_socket,buf,REMOTE_DEBUG_PORTNUMBER);
 //   rtsmb_net_write_datagram (diag_socket, remoteDiagAddr, remotePort/* REMOTE_DEBUG_PORTNUMBER */, buf, strlen(buf));
-   rtsmb_net_write_datagram (diag_socket, local_host, REMOTE_DEBUG_PORTNUMBER , buf, strlen(buf));
+   rtsmb_net_write_datagram (diag_socket, local_host, REMOTE_DEBUG_FROM_PROXY_PORTNUMBER, buf, strlen(buf));
 }
+
+#warning FIX THIS WITH STREAMS
+static unsigned char rcvbuffer[1024*512];
+static int rcvcount=0;
+
+// recv anything but should be http server to the smb server over localhost
+int diag_recv_results_from_smb(char *buffer, int len)
+{
+unsigned char remoteDiagAddr[4];
+int i;
+//  printf("\n");
+//  for (i=0; i < 1000; i++)
+//    printf("SorryIneedtodelay\r");
+  printf("diag_recv_results_from_smb call read dgram with pending == %d\n", rcvcount);
+  do
+  {
+    printf("call read dgram\n");
+    len = rtsmb_net_read_datagram (diag_socket, (void *) buffer, len, remoteDiagAddr, &remotePort);
+    printf("back read dgram %d\n", len);
+  } while (len <= 0);
+  return len;
+}
+
+
 // recv anything but should be http server to the smb server over localhost
 static void diag_recv(void)
 {
 unsigned char remoteDiagAddr[4];
-unsigned char buffer[255];
+unsigned char *buffer = rcvbuffer+rcvcount;
 int len;
-  len = rtsmb_net_read_datagram (diag_socket, (void *) buffer, sizeof(buffer), remoteDiagAddr, &remotePort);
-  buffer[len]=0;
-  printf("n:%d [%s]\n",len, buffer);
-  diag_send_command(buffer);
+printf("diag_recv call rtp_net_recvfrom\n");
+
+  len = rtsmb_net_read_datagram (diag_socket, (void *) buffer, sizeof(rcvbuffer)-rcvcount, remoteDiagAddr, &remotePort);
+printf("return rtp_net_recvfrom(%d) with %d\n", diag_socket, len );
+  if (len > 0)
+  {
+    printf("diag_recv set pending == %d\n", rcvcount);
+    rcvcount += len;
+    buffer[rcvcount]=0;
+  }
+//  printf("n:%d [%s]\n",len, buffer);
+//  diag_send_command(buffer);
 }
 
 // Bind to local port so we can talk with NC
 static int bind_diag_socket(void)
 {
-static int port = 0;
-    if (port) return 1;
-    port = LOCAL_DEBUG_PORTNUMBER;
+    if (diag_socket > 0)
+      return 1;
+
     if (rtp_net_socket_datagram(&diag_socket) < 0)
     {
 //        RTP_DEBUG_OUTPUT_SYSLOG(SYSLOG_ERROR_LVL, "srvobject_bind_diag_socket: Unable to get new socket\n");
         return 0;
     }
-    if (rtp_net_bind(diag_socket, (unsigned char*)0, port, 4))
+    if (rtp_net_bind(diag_socket, (unsigned char*)0, REMOTE_DEBUG_TO_PROXY_PORTNUMBER, 4))
     {
 //        RTP_DEBUG_OUTPUT_SYSLOG(SYSLOG_ERROR_LVL, "srvobject_bind_diag_socket: bind to port %d failed\n",port);
         return 0;

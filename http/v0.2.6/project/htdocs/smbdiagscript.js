@@ -1,6 +1,60 @@
 
 var ntimes=0;
 var xmlhttp;
+var xmlhttp;
+
+var DiagAjaxUpdateperiod = 0;
+function DiagAjaxUpdate()
+{
+    if (!xmlhttp)
+    {
+        if (window.XMLHttpRequest)
+        {// code for IE7+, Firefox, Chrome, Opera, Safari
+            xmlhttp=new XMLHttpRequest();
+        }
+        else
+        {// code for IE6, IE5
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+
+        xmlhttp.onreadystatechange=function()
+        {
+//            alert('onreadystatechange state=='+xmlhttp.readyState+' status=='+xmlhttp.status);
+            if (xmlhttp.readyState==4 && xmlhttp.status==200)
+            {
+//            alert("Content type == "+xmlhttp.getResponseHeader ("Content-Type"));;
+//            alert("Content length == "+xmlhttp.getResponseHeader ("Content-Length"));
+//                alert("respose == "+xmlhttp.responseText);
+ //               document.getElementById("myDiv").innerHTML= "Content type : "+xmlhttp.getResponseHeader("Content-Type")+"<br>";
+ //               document.getElementById("myDiv").innerHTML = document.getElementById("myDiv").innerHTML + "Content length : "+xmlhttp.getResponseHeader("Content-Length")+"<br>";
+                document.getElementById("myDiv").innerHTML =  xmlhttp.responseText;
+            }
+        }
+    }
+    var diagrequest =document.getElementById("AjaxSetVal").value;
+    if (diagrequest &&  diagrequest.indexOf("SMB FIDS") != -1)
+    {
+       xmlhttp.open("GET","smbdiag_ajax_getfids",true);
+    }
+    else if (diagrequest &&  diagrequest.indexOf("SMB TIDS") != -1)
+    {
+       xmlhttp.open("GET","smbdiag_ajax_getfids",true);
+    }
+    else
+    {
+       xmlhttp.open("GET","smbdiag_ajax_getdefault",true);
+    }
+//    xmlhttp.open("GET","ajax.html?10",true);
+//    alert('call send new way');
+    xmlhttp.send("I%20sent%20ome%20stuff%20to%20you");
+//    alert('call send is back');
+//    alert("sync respose == "+xmlhttp.responseText);
+//    document.getElementById("myDiv").innerHTML=xmlhttp.responseText;
+//    setTimeout("DiagAjaxUpdate()", 10000);
+    if (DiagAjaxUpdateperiod)
+      setTimeout("DiagAjaxUpdate()", DiagAjaxUpdateperiod);
+}
+
 
 function AjaxUpdate()
 {
@@ -39,6 +93,7 @@ function AjaxUpdate()
 //    document.getElementById("myDiv").innerHTML=xmlhttp.responseText;
     setTimeout("AjaxUpdate()", 10000);
 }
+
 
 
 function ajaxRequest(){
@@ -82,7 +137,20 @@ var parameters = "AjaxSetVal="+value;
     mypostrequest.send(parameters);
 }
 
-function PostInput()
+
+function diagGetCommand()
+{
+   document.getElementById("AjaxSetVal").value = this.innerHTML;
+   DiagAjaxUpdate();
+}
+
+function doClear()
+{
+  document.getElementById("myDiv").innerHTML = "";
+}
+
+
+function diagPostCommand()
 {
     document.getElementById("AjaxSetVal").value = this.innerHTML;
     doPost();
@@ -92,27 +160,31 @@ function dostartUpdate()
 {
     setTimeout('AjaxUpdate(1);', 10000);
 }
+
 function dostart()
 {
 var r,c,x;
 
-/*
-    for (r = 0; r < document.getElementById("smbdiagiapptable").rows.length; r++)
-    {
-        for (c=0; c<document.getElementById("smbdiagiapptable").rows[r].cells.length; c++)
-        {
-            document.getElementById("smbdiagiapptable").rows[r].cells[c].onclick=PostInput;
-        }
-   }
-*/
+  // Assign handlers by class associations.
+
+  // smbdiagposttype -
    x = document.getElementsByClassName("smbdiagposttype");
-   for (r = 0; r < x.length; r++) {
-      x[r].onclick=PostInput;
-   }
+   for (r = 0; r < x.length; r++) { x[r].onclick=diagPostCommand; }
+
+   x = document.getElementsByClassName("smbdiaggettype");
+   for (r = 0; r < x.length; r++) { x[r].onclick=diagGetCommand;}
 
    x = document.getElementsByClassName("donotclick");
-   for (r = 0; r < x.length; r++) {
-      x[r].onclick=null;
-   }
+   for (r = 0; r < x.length; r++) { x[r].onclick=null; }
 
+   document.getElementById("clicktoclear").onclick=doClear;
+}
+
+function PeriodicDiagAjaxUpdate()
+{
+    if (DiagAjaxUpdateperiod == 0)
+      DiagAjaxUpdateperiod = 1000;
+    else
+      DiagAjaxUpdateperiod = 0;
+    setTimeout("DiagAjaxUpdate()", DiagAjaxUpdateperiod);
 }

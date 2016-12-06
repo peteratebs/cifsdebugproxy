@@ -2,8 +2,8 @@ table.smbdiagiapptable {
     border-width:4;
     border-style:solid;
     border-color:black;
-    width:800;
-    height:900;
+    width:100%;
+    height:100%;
 }
 th.smbdiagiapptable {
     border-width:1;
@@ -21,15 +21,24 @@ td.smbdiagiapptable {
     border-width:1;
     border-style:solid;
     border-color:black;
-    width:100;
-//    width:25%;
+    width:20%;
     }
 td.smbdiagoutput {
     border-width:1;
     border-style:solid;
     border-color:black;
-//    width:50%;
+    width:80%;
     }
+textarea.smbdiagoutput {
+    border-style:none;
+    width:100%;
+    height:100%;
+    font-family: monospace;
+    white-space: nowrap;
+    overflow-x: scroll;
+    overflow-y: scroll;
+    }
+
 td.smbdiagconsole {
     border-width:1;
     border-style:solid;
@@ -37,7 +46,8 @@ td.smbdiagconsole {
     width:100%;
     height:200;
     }
-td.smbdiagposttype {
+
+td.ssmbdiaggettype {
     border-width:1;
     border-style:solid;
     border-color:black;

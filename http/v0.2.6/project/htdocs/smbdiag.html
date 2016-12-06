@@ -11,35 +11,31 @@
 
 <form id="smbdiag_ajax_command_submit">
 <table id="smbdiagiapptable" class="smbdiagiapptable">
-<th class="smbdiagiapptable" colspan=3>Click a cell to send the command to the server.</th>
 <tr class="smbdiagiapptable">
- <td class="smbdiagiapptable">+10</td><td class="smbdiagiapptable">-10</td>
- <td class="smbdiagoutput  donotclick" rowspan=7><div id="myDiv"><h2>AJAX Will Change This Text Content !</h2></div> </td>
-</tr>
-<tr>
- <td class="smbdiagiapptable">+100</td><td class="smbdiagiapptable">-100</td>
+<td class="smbdiagiapptable" colspan=2>COMMANDS</td>
+<td class="smbdiagoutput  donotclick" rowspan=7><textarea class="smbdiagoutput" id="myDiv">Click buttons to the left and results are displayed here.</textarea> </td>
 </tr>
 <tr class="smbdiagiapptable">
- <td class="smbdiagposttype" colspan=2>clear</td>
+<td class="smbdiagposttype" id="clicktoclear" colspan=2 >CLEAR</td>
 </tr>
 <tr class="smbdiagiapptable"  rowspan=2>
 <td class="smbdiagposttype donotclick" colspan=2>
- <button type="button" onclick="dostartUpdate()"><br>Click To Start <br>Retrieving Updates From<br> The Server</button>
+<button type="button" onclick="PeriodicDiagAjaxUpdate()">Toggle AutoRefresh</button>
 </tr>
 <tr class="smbdiagiapptable">
- <td class="smbdiagposttype" colspan=2>SMB FIDS</td>
+<td class="smbdiaggettype" colspan=2>SMB FIDS</td>
 </tr>
 <tr class="smbdiagiapptable">
- <td class="smbdiagposttype" colspan=2>SMB TIDS</td>
+<td class="smbdiagposttype" colspan=2>SMB TIDS</td>
 </tr>
 <tr class="smbdiagiapptable">
- <td class="smbdiagposttype" colspan=2>SMB SESSION</td>
+<td class="smbdiagposttype" colspan=2>SMB SESSION</td>
 </tr>
 <tr class="smbdiagiapptable">
- <td class="smbdiagposttype" colspan=2>SMB STATS</td>
+<td class="smbdiagposttype" colspan=2>SMB STATS</td>
 </tr>
 <tr class="smbdiagiapptable donotclick">
- <td class="smbdiagconsole donotclick" colspan=3> </td>
+<td class="smbdiagconsole donotclick" colspan=3> </td>
 </tr>
 </table>
 <input type="text" name="AjaxSetVal" id="AjaxSetVal" value="0">

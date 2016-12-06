@@ -30,6 +30,7 @@
 #include "htmlutils.h"
 
 extern void diag_test(void);
+extern int diag_recv_results_from_smb(char *buffer, int len);
 
 
  /* A context structure for keeping our application data
@@ -247,6 +248,8 @@ static int http_server_demo_restart(void)
 		return -1;
 	rtp_printf("Post Handlers for smbdiag_ajax_setval_submit, smbdiag_ajax_command_submit and smbdiag_ajax_getval have been assigned\n");
 
+	if (HTTP_ServerAddPostHandler(&ExampleServerCtx.httpServer, "\\smbdiag_ajax_getfids", ajax_update_demo_cb, (void *)"get_value") < 0)
+		return -1;
 	return (0);
 }
 
@@ -574,18 +577,20 @@ HTTP_CHAR cgiArgs[256];
                value_count = 0;
             }
 #else
-	if (rtp_strstr(request->target, "/smbdebug"))
+    if (rtp_strcmp(request->target, "/smbdiag_ajax_getfids")==0)
     {
-            diag_test();
-			sprintf(respBuffer,"<html><body><b>Systick [%d] <br>PanelValue [%d]</b></body></html>",rtp_get_system_msec(), AjaxDemoValue);
+    int l,j;
+        diag_send_command("SMB FIDS");
+        j = diag_recv_results_from_smb(respBuffer, respBufferSize);
+        if (j > 0)
+			respBuffer[j]=0;
+        else
+            strcpy(respBuffer,"Failed retrieving a response from the server");
     }
-    else if (rtp_strcmp(request->target, "/smbdiag_ajax_getval")==0)
+    else // if (rtp_strcmp(request->target, "/smbdiag_ajax_getval")==0)
     {
-//            diag_test();
-			sprintf(respBuffer,"<html><body><b>Systick [%d] <br>PanelValue [%d]</b></body></html>",rtp_get_system_msec(), AjaxDemoValue);
+			sprintf(respBuffer,"Command %s is not implement yet <br>",request->target);
     }
-
-			sprintf(respBuffer,"<html><body><b>Systick [%d] <br>PanelValue [%d]</b></body></html>",rtp_get_system_msec(), AjaxDemoValue);
 #endif
 			HTTP_ServerInitResponse(ctx, session, &response, 200, "OK");
 			HTTP_ServerSetDefaultHeaders(ctx, &response);
