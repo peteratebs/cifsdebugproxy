@@ -1,9 +1,40 @@
 
 var ntimes=0;
 var xmlhttp;
-var xmlhttp;
-
+var DiagConsolexmlhttp;
 var DiagAjaxUpdateperiod = 0;
+var diagConsole = "diagConsole"
+var diagOutput = "diagOutput"
+var diagConsoleLineCount = 0;
+var doing_messages=0;
+var diagConsoleMaxLineCount = 200;
+
+// Update When auto refresh is enabled update the messgage window first, then update
+// console
+function ClearDiagConsole()
+{
+  diagConsoleLineCount = 0;
+  document.getElementById(diagConsole).innerHTML = "";
+}
+// consume the text itf it is is DIAG: or NOPE: otherwise return 1 and we put it in the output window
+function PrintDiagConsole(textline)
+{
+  if (textline.indexOf("DIAG:")==0)
+  {
+     document.getElementById(diagConsole).innerHTML += textline.slice(5);
+     document.getElementById(diagConsole).scrollTop = document.getElementById(diagConsole).scrollHeight;
+     console.log("Got text");
+     return(1);
+  }
+  if (textline.indexOf("NOPE:")==0)
+  {
+      console.log("Got nope");
+      return(1);
+  }
+  return(0);
+
+}
+
 function DiagAjaxUpdate()
 {
     if (!xmlhttp)
@@ -25,73 +56,45 @@ function DiagAjaxUpdate()
 //            alert("Content type == "+xmlhttp.getResponseHeader ("Content-Type"));;
 //            alert("Content length == "+xmlhttp.getResponseHeader ("Content-Length"));
 //                alert("respose == "+xmlhttp.responseText);
- //               document.getElementById("myDiv").innerHTML= "Content type : "+xmlhttp.getResponseHeader("Content-Type")+"<br>";
- //               document.getElementById("myDiv").innerHTML = document.getElementById("myDiv").innerHTML + "Content length : "+xmlhttp.getResponseHeader("Content-Length")+"<br>";
-                document.getElementById("myDiv").innerHTML =  xmlhttp.responseText;
+               var r = PrintDiagConsole(xmlhttp.responseText);
+               console.log("res: " + r + " for: "+ xmlhttp.responseText.slice(0,6)+" len: "+ xmlhttp.responseText.length );
+               if (r==0)
+               {
+                 console.log("to optput: "+xmlhttp.responseText.slice(0,6));
+                 document.getElementById(diagOutput).innerHTML =  xmlhttp.responseText;
+               }
             }
         }
     }
-    var diagrequest =document.getElementById("AjaxSetVal").value;
-    if (diagrequest &&  diagrequest.indexOf("SMB FIDS") != -1)
+    if (doing_messages)
     {
-       xmlhttp.open("GET","smbdiag_ajax_getfids",true);
-    }
-    else if (diagrequest &&  diagrequest.indexOf("SMB TIDS") != -1)
-    {
-       xmlhttp.open("GET","smbdiag_ajax_getfids",true);
+       xmlhttp.open("GET","smbdiag_ajax_getmessages",true);
+       doing_messages=0; // set to 1 for messages, not working right yet
     }
     else
     {
-       xmlhttp.open("GET","smbdiag_ajax_getdefault",true);
+      var diagrequest =document.getElementById("AjaxSetVal").value;
+      if (diagrequest &&  diagrequest.indexOf("SMB FIDS") != -1)
+      {
+         xmlhttp.open("GET","smbdiag_ajax_getfids",true);
+         doing_messages=1; // set to 1 for messages, not working right yet
+      }
+      else if (diagrequest &&  diagrequest.indexOf("SMB TIDS") != -1)
+      {
+         xmlhttp.open("GET","smbdiag_ajax_getfids",true);
+      }
+      else
+      {
+         xmlhttp.open("GET","smbdiag_ajax_getdefault",true);
+      }
     }
 //    xmlhttp.open("GET","ajax.html?10",true);
 //    alert('call send new way');
     xmlhttp.send("I%20sent%20ome%20stuff%20to%20you");
-//    alert('call send is back');
-//    alert("sync respose == "+xmlhttp.responseText);
-//    document.getElementById("myDiv").innerHTML=xmlhttp.responseText;
-//    setTimeout("DiagAjaxUpdate()", 10000);
     if (DiagAjaxUpdateperiod)
-      setTimeout("DiagAjaxUpdate()", DiagAjaxUpdateperiod);
-}
-
-
-function AjaxUpdate()
-{
-    if (!xmlhttp)
     {
-        if (window.XMLHttpRequest)
-        {// code for IE7+, Firefox, Chrome, Opera, Safari
-            xmlhttp=new XMLHttpRequest();
-        }
-        else
-        {// code for IE6, IE5
-            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-        }
-
-        xmlhttp.onreadystatechange=function()
-        {
-//            alert('onreadystatechange state=='+xmlhttp.readyState+' status=='+xmlhttp.status);
-            if (xmlhttp.readyState==4 && xmlhttp.status==200)
-            {
-//            alert("Content type == "+xmlhttp.getResponseHeader ("Content-Type"));;
-//            alert("Content length == "+xmlhttp.getResponseHeader ("Content-Length"));
-//                alert("respose == "+xmlhttp.responseText);
- //               document.getElementById("myDiv").innerHTML= "Content type : "+xmlhttp.getResponseHeader("Content-Type")+"<br>";
- //               document.getElementById("myDiv").innerHTML = document.getElementById("myDiv").innerHTML + "Content length : "+xmlhttp.getResponseHeader("Content-Length")+"<br>";
-                document.getElementById("myDiv").innerHTML =  xmlhttp.responseText;
-            }
-        }
+      setTimeout("DiagAjaxUpdate()", DiagAjaxUpdateperiod);
     }
-    //     xmlhttp.open("GET","http://statincInfo.html",true); -->
-    xmlhttp.open("GET","smbdiag_ajax_getval",true);
-//    xmlhttp.open("GET","ajax.html?10",true);
-//    alert('call send new way');
-    xmlhttp.send("I%20sent%20ome%20stuff%20to%20you");
-//    alert('call send is back');
-//    alert("sync respose == "+xmlhttp.responseText);
-//    document.getElementById("myDiv").innerHTML=xmlhttp.responseText;
-    setTimeout("AjaxUpdate()", 10000);
 }
 
 
@@ -102,6 +105,7 @@ function ajaxRequest(){
   for (var i=0; i<activexmodes.length; i++){
    try{
     return new ActiveXObject(activexmodes[i]);
+
    }
    catch(e){
     //suppress error
@@ -146,7 +150,8 @@ function diagGetCommand()
 
 function doClear()
 {
-  document.getElementById("myDiv").innerHTML = "";
+  document.getElementById(diagOutput).innerHTML = "";
+  document.getElementById(diagConsole).innerHTML = "";
 }
 
 
@@ -158,7 +163,7 @@ function diagPostCommand()
 
 function dostartUpdate()
 {
-    setTimeout('AjaxUpdate(1);', 10000);
+    setTimeout('DiagAjaxUpdate(1);', 10000);
 }
 
 function dostart()
@@ -187,4 +192,5 @@ function PeriodicDiagAjaxUpdate()
     else
       DiagAjaxUpdateperiod = 0;
     setTimeout("DiagAjaxUpdate()", DiagAjaxUpdateperiod);
+
 }

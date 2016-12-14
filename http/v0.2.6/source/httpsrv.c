@@ -1798,21 +1798,54 @@ void diag_send_command(char *buf)
 #warning FIX THIS WITH STREAMS
 extern volatile int go;
 
-
 // recv anything but should be http server to the smb server over localhost
+#if (0)
 int diag_recv_results_from_smb(char *buffer, int len)
 {
 unsigned char remoteDiagAddr[4];
 int timeout = 10;
+int misses = 0;
+int total=0;
+char *start_buffer=buffer;
   do
   {
-    if (rtp_net_read_select (diag_socket, 1000)==0) //  rtp_net_read_select return zero on success
+    if (rtp_net_read_select (diag_socket, 100)==0) //  rtp_net_read_select return zero on success
+    {
+      len = rtsmb_net_read_datagram (diag_socket, (void *) buffer, len, remoteDiagAddr, &remotePort);
+      rtp_printf("recv in loop :%d\n", len);
+      if (len > 0) {total += len;misses =0; buffer += len;}
+    }
+    else
+    {
+     rtp_printf("missed with t:%d\n", total);
+      misses += 1;
+      if (misses && total)
+        break;
+    }
+  } while (go && timeout--);
+  if (!timeout)
+      rtp_printf("UDP timed out waiting for SMB server\n");
+  rtp_printf("recv returs :%d\n", total);
+  start_buffer[total]=0;
+  return total;
+}
+#endif
+int diag_recv_results_from_smb(char *buffer, int len)
+{
+unsigned char remoteDiagAddr[4];
+int timeout = 10;
+int misses = 0;
+int total=0;
+char *start_buffer=buffer;
+  do
+  {
+    if (rtp_net_read_select (diag_socket, 100)==0) //  rtp_net_read_select return zero on success
     {
       len = rtsmb_net_read_datagram (diag_socket, (void *) buffer, len, remoteDiagAddr, &remotePort);
     }
   } while (go && timeout-- && len <= 0);
-  if (!timeout)
-      rtp_printf("UDP timed out waiting for SMB server\n");
+  if (len<0) len=0;
+  start_buffer[len]=0;
   return len;
 }
 
